@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 export default async function handler(req, res) {
 	switch (req.method) {
 		case 'GET':
-			await getUsers(req, res);
+			await authenticate(req, res, () => getUsers(req, res));
 			break;
 		case 'POST':
 			await addUser(req, res);
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 async function getUsers(req, res) {
 	try {
 		const users = await prisma.user.findMany();
-		res.status(200).json(users);
+		res.status(200).json(users.map(({ password, ...user }) => user));
 
 	} catch (error) {
 		console.error(error);
@@ -38,6 +38,11 @@ async function addUser(req, res) {
 	}
 
 	try {
+		const existingUser = await prisma.user.findUnique({ where: { email } });
+		if (existingUser) {
+			return res.status(400).json({ message: 'User already exists' });
+		}
+
 		const hashedPassword = await bcrypt.hash(password, 10);
 
 		const user = await prisma.user.create({
@@ -48,7 +53,13 @@ async function addUser(req, res) {
 			expiresIn: '1d',
 		});
 
-		res.status(201).json({ user, token });
+		res.status(201).json({
+			user: {
+				id: user.id,
+				name: user.name,
+				email: user.email,
+			}, token
+		});
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ message: 'Error creating user' });
