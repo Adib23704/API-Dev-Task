@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 export default async function handler(req, res) {
 	switch (req.method) {
 		case 'GET':
-			await authenticate(req, res, () => getUsers(req, res));
+			await authenticate(req, res, async () => await getUsers(req, res));
 			break;
 		case 'POST':
 			await addUser(req, res);

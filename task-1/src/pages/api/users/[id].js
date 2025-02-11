@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export default async function handler(req, res) {
 	switch (req.method) {
 		case 'GET':
-			await authenticate(req, res, () => getUserById(req, res));
+			await authenticate(req, res, async () => await getUserById(req, res));
 			break;
 		default:
 			res.setHeader('Allow', ['GET']);
