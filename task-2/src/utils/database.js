@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 
-const DB_FILE = path.resolve(__dirname, 'db.json');
+const DB_FILE = path.resolve(process.cwd(), 'db.json');
 
 export function readDatabase() {
 	try {
